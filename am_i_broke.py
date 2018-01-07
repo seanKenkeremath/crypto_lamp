@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests, json
+import requests, json, os
 
 ALERT_NONE = "none"
 ALERT_MULTI_BLINK = "lselect"
@@ -28,7 +28,9 @@ GAINS_MAX = 40
 #NOTE requests must be installed. Run "pip install requests"
 config_dict = {}
 
-with open('crypto_lamp.config', 'r') as config:
+CURRENT_DIR = os.path.dirname(__file__)
+
+with open(os.path.join(CURRENT_DIR, 'crypto_lamp.config'), 'r') as config:
     config_data = config.read()
     config_values = config_data.split("\n")
     for i in range(len(config_values)):
