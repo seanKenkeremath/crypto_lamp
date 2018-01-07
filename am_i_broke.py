@@ -41,7 +41,7 @@ blockfolio_token = config_dict["blockfolio_token"]
 
 request = "https://api-v0.blockfolio.com/rest/get_all_positions/%s?fiat_currency=USD&locale=en-US&use_alias=true" % blockfolio_token
 
-response_json = requests.get(request).json()
+response_json = json.loads(requests.get(request).content)
 percent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
 
 down = percent < 0
