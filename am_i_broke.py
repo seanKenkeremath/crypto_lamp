@@ -46,6 +46,7 @@ request = "https://api-v0.blockfolio.com/rest/get_all_positions/%s?fiat_currency
 response_json = json.loads(requests.get(request).content)
 percent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
 
+saturation = SATURATION
 down = percent < 0
 brightness = 0
 color = 0
@@ -67,6 +68,7 @@ light_state["on"] = True
 light_state["alert"] = alert
 light_state["hue"] = color
 light_state["bri"] = brightness
+light_state["sat"] = saturation
 
 light_state_change_url = "http://%s/api/%s/lights/%s/state" % (config_dict["hue_bridge_ip"], config_dict["hue_user_token"], config_dict["hue_light_id"])
 
