@@ -99,3 +99,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+#crypto_lamp
+crypto_delta.dat
+
+#mac
+.DS_STORE

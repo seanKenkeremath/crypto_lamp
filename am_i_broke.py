@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import requests, json, os
+import requests, json, os, sys
 
 ALERT_NONE = "none"
 ALERT_MULTI_BLINK = "lselect"
@@ -24,11 +24,28 @@ BRIGHT_MIN = 1
 LOSS_MAX = -30
 GAINS_MAX = 40
 
+MODE_24_HR = 1
+MODE_DELTA = 2
+
+CURRENT_DIR = os.path.dirname(__file__)
+DELTA_FILE_PATH = os.path.join(CURRENT_DIR, 'crypto_delta.dat')
+
+
+# default is daily mode (24 hour cumulative)
+mode = MODE_24_HR
+
+i = 0
+while i < len(sys.argv):
+	arg = sys.argv[i]
+	if arg == "--delta":
+		mode = MODE_DELTA
+	if arg == "--daily":
+		mode = MODE_24_HR
+	i += 1
+
 
 #NOTE requests must be installed. Run "pip install requests"
 config_dict = {}
-
-CURRENT_DIR = os.path.dirname(__file__)
 
 with open(os.path.join(CURRENT_DIR, 'crypto_lamp.config'), 'r') as config:
     config_data = config.read()
@@ -44,7 +61,32 @@ blockfolio_token = config_dict["blockfolio_token"]
 request = "https://api-v0.blockfolio.com/rest/get_all_positions/%s?fiat_currency=USD&locale=en-US&use_alias=true" % blockfolio_token
 
 response_json = json.loads(requests.get(request).content)
-percent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
+
+percent = 0
+if mode == MODE_24_HR:
+	# just use 24 hr diff returned by API
+	percent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
+elif mode == MODE_DELTA:
+	# keep track of total portfolio value and calculate delta. base percent on total percent change since last run
+	# note: the first time this runs, if the .dat file does not exist it will treat the previous value as $0
+	oldTotal = 0
+	currentTotal = float(response_json["portfolio"]["portfolioValueFiatString"].replace(',', ''))
+	if os.path.exists(DELTA_FILE_PATH):
+		delta_file = open(DELTA_FILE_PATH, "r")
+		oldTotal = float(delta_file.read())
+		delta_file.close()
+
+		# delete old .dat file
+		os.remove(DELTA_FILE_PATH)
+
+	# to avoid divide by zero
+	if oldTotal > 0:
+		percent = (currentTotal - oldTotal)/oldTotal
+
+	# create .dat file for next time
+	delta_file = open(DELTA_FILE_PATH, "w")
+	delta_file.write(str(currentTotal))
+	delta_file.close()
 
 saturation = SATURATION
 down = percent < 0
