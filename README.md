@@ -51,7 +51,7 @@ If you are running the script from a Linux device or Mac, use `cron` to schedule
 ## Adjust parameters
 There are a few parameters in the script you can tweak. Edit `am_i_broke.py` to change them. 
 
-* `SATURATION` - By default I left it at 254 (max). you can lower it if you want a more white hue of green/red
+* `SATURATION` - By default I left it at 125 (max). you can lower it if you want a more white hue of green/red
 * `GAINS_MAX` - What percent gains should make the light shine brightest. It will increase from brightness from 0% to whatever this value is. If it goes pass this value it will start flashing. You should tweak this based on how often you are running the script. For example if you are running it daily, 20% may be a good max number for gains, but if you are running it every 5 minutes, it could be as low as a few percents.
 * `LOSS_MAX` - Same as above, but for losses. This one is negative
 * `GREEN_HUE` - The type of green used when you're up. This can be changed to any color. see the Phillips Hue documentation for other color values
