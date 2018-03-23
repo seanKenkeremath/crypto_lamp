@@ -24,6 +24,9 @@ BRIGHT_MIN = 1
 LOSS_MAX = -10
 GAINS_MAX = 10
 
+SOURCE_TICKER = 1
+SOURCE_BLOCKFOLIO = 2
+
 MODE_24_HR = 1
 MODE_DELTA = 2
 
@@ -31,16 +34,23 @@ CURRENT_DIR = os.path.dirname(__file__)
 DELTA_FILE_PATH = os.path.join(CURRENT_DIR, 'crypto_delta.dat')
 
 
-# default is daily mode (24 hour cumulative)
+# default is daily mode (24 hour cumulative) of blockfolio account
 mode = MODE_24_HR
+source = SOURCE_BLOCKFOLIO
+
+#only used if in ticker mode
+ticker = ""
 
 i = 0
 while i < len(sys.argv):
 	arg = sys.argv[i]
-	if arg == "--delta":
-		mode = MODE_DELTA
-	if arg == "--daily":
+	if arg == "-24":
 		mode = MODE_24_HR
+	if arg == "-d":
+		mode = MODE_DELTA
+	if arg == "--ticker":
+		source = SOURCE_TICKER
+		ticker = sys.argv[i+1]
 	i += 1
 
 
@@ -56,21 +66,30 @@ with open(os.path.join(CURRENT_DIR, 'crypto_lamp.config'), 'r') as config:
     		continue
     	config_dict[config_pair[0]] = config_pair[1]
 
-blockfolio_token = config_dict["blockfolio_token"]
+currentTotal = 0
+dailyPercent = 0
 
-request = "https://api-v0.blockfolio.com/rest/get_all_positions/%s?fiat_currency=USD&locale=en-US&use_alias=true" % blockfolio_token
-
-response_json = json.loads(requests.get(request).content)
+if not source == SOURCE_TICKER:
+	blockfolio_token = config_dict["blockfolio_token"]
+	request = "https://api-v0.blockfolio.com/rest/get_all_positions/%s?fiat_currency=USD&locale=en-US&use_alias=true" % blockfolio_token
+	response_json = json.loads(requests.get(request).content)
+	dailyPercent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
+	currentTotal = float(response_json["portfolio"]["portfolioValueFiatString"].replace(',', ''))
+else:
+	request = "https://api.coinmarketcap.com/v1/ticker/%s/" % ticker
+	response_json = json.loads(requests.get(request).content)
+	dailyPercent = float(response_json[0]["percent_change_24h"])
+	currentTotal = float(response_json[0]["market_cap_usd"])
 
 percent = 0
+
 if mode == MODE_24_HR:
 	# just use 24 hr diff returned by API
-	percent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
+	percent = dailyPercent
 elif mode == MODE_DELTA:
 	# keep track of total portfolio value and calculate delta. base percent on total percent change since last run
 	# note: the first time this runs, if the .dat file does not exist it will treat the previous value as $0
 	oldTotal = 0
-	currentTotal = float(response_json["portfolio"]["portfolioValueFiatString"].replace(',', ''))
 	if os.path.exists(DELTA_FILE_PATH):
 		delta_file = open(DELTA_FILE_PATH, "r")
 		oldTotal = float(delta_file.read())
