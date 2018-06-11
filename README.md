@@ -3,6 +3,8 @@ A python script for smart lightbulbs that shows how badly you're losing money in
 
 The script can be set to track either your portfolio (using Blockfolio) or the value of an individual coin
 
+## NOTE: Blockfolio recently changed their APIs so blockfolio tracking does not currently work. I will look into fixing this soon. If anyone sees a fix feel free to open a PR. Tracking an individual coin still works. For instance, to track Bitcoin in 24 hour mode you would run `python am_i_broke.py --ticker bitcoin`
+
 ## You will need:
 * Phillips Hue Color Bulb + a Hue Bridge
 * The Blockfolio app (free, iOS/Android) if tracking portfolio
@@ -36,7 +38,7 @@ There are two data sources you can run and two ways to calculate gains. By defau
 #### Tracking an individual coin
 Using the ID you found from the Ticker Setup section, run `python am_i_broke.py --ticker {insert coin id}`.
 
-#### Using Blockfolio Data
+#### Using Blockfolio Data (NOTE: This is currently broken. See comment at the top of the Readme)
 This is how you track your portfolio. This is the default setting and does not require an extra command line argument.
 
 #### Delta Mode
