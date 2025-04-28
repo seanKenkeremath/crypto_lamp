@@ -45,8 +45,7 @@ SOURCE_STOCK = 2
 CURRENT_DIR = os.path.dirname(__file__)
 DELTA_FILE_PATH = os.path.join(CURRENT_DIR, 'crypto_delta.dat')
 
-# Add recurring mode constants
-RECURRING_INTERVAL_MINUTES = 15  # Default interval in minutes
+RECURRING_INTERVAL_MINUTES = 15
 
 # default is daily mode (24 hour cumulative)
 mode = MODE_24_HR
@@ -111,9 +110,7 @@ def update_light():
 	currentTotal = 0
 	dailyPercent = 0
 	
-	# Fetch data based on source (crypto or stock)
 	if source == SOURCE_CRYPTO:
-		# Existing crypto code...
 		cmc_api_key = config_dict["cmc_api_key"]
 		headers = {
 			'X-CMC_PRO_API_KEY': cmc_api_key,
@@ -144,7 +141,6 @@ def update_light():
 				sys.exit(1)
 			return
 	elif source == SOURCE_STOCK:
-		# Existing stock code...
 		try:
 			# Get stock data using yfinance
 			stock = yf.Ticker(ticker)
@@ -163,7 +159,6 @@ def update_light():
 			dailyPercent = ((today_close - yesterday_close) / yesterday_close) * 100
 			currentTotal = today_close * stock.info.get('sharesOutstanding', 1)  # Market cap or just price if shares not available
 			
-			# Only print detailed information in verbose mode
 			if verbose:
 				print(f"Stock: {ticker}")
 				print(f"Current Price: ${today_close:.2f}")
@@ -181,7 +176,6 @@ def update_light():
 		# just use 24 hr diff returned by API
 		percent = dailyPercent
 	elif mode == MODE_DELTA:
-		# Existing delta mode code...
 		oldTotal = 0
 		if os.path.exists(DELTA_FILE_PATH):
 			delta_file = open(DELTA_FILE_PATH, "r")
@@ -232,8 +226,8 @@ def update_light():
 			v2_light_state["alert"] = {"action": "breathe"}
 		brightness = max(BRIGHT_MIN, min(BRIGHT_MAX, brightness))
 		# xy values for green
-		v2_light_state["color"]["xy"]["x"] = 0.408
-		v2_light_state["color"]["xy"]["y"] = 0.517
+		v2_light_state["color"]["xy"]["x"] = 0.208
+		v2_light_state["color"]["xy"]["y"] = 0.717
 	v2_light_state["dimming"]["brightness"] = (brightness / BRIGHT_MAX) * 100
 	
 	headers = {
