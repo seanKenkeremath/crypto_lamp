@@ -13,12 +13,11 @@
 # limitations under the License.
 
 import requests, json, os, sys
+import urllib3
 
-ALERT_NONE = "none"
-ALERT_MULTI_BLINK = "lselect"
-GREEN_HUE = 25500
-RED_HUE = 63000
-SATURATION = 100
+# Suppress the InsecureRequestWarning for requests to the Hue bridge
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 BRIGHT_MAX = 254
 BRIGHT_MIN = 1
 LOSS_MAX = -10
@@ -76,10 +75,25 @@ if not source == SOURCE_TICKER:
 	dailyPercent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
 	currentTotal = float(response_json["portfolio"]["portfolioValueFiatString"].replace(',', ''))
 else:
-	request = "https://api.coinmarketcap.com/v1/ticker/%s/" % ticker
-	response_json = json.loads(requests.get(request).content)
-	dailyPercent = float(response_json[0]["percent_change_24h"])
-	currentTotal = float(response_json[0]["market_cap_usd"])
+	cmc_api_key = config_dict["cmc_api_key"]
+	headers = {
+		'X-CMC_PRO_API_KEY': cmc_api_key,
+		'Accept': 'application/json'
+	}
+	
+	request = f"https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol={ticker}"
+	
+	try:
+		response = requests.get(request, headers=headers)
+		response_json = json.loads(response.content)
+		
+		ticker_data = response_json['data'][ticker.upper()]
+		dailyPercent = float(ticker_data['quote']['USD']['percent_change_24h'])
+		currentTotal = float(ticker_data['quote']['USD']['market_cap'])
+	except Exception as e:
+		print(f"Error fetching data from CoinMarketCap: {e}")
+		print("Response:", response.content if 'response' in locals() else "No response")
+		sys.exit(1)
 
 percent = 0
 
@@ -107,31 +121,52 @@ elif mode == MODE_DELTA:
 	delta_file.write(str(currentTotal))
 	delta_file.close()
 
-saturation = SATURATION
 down = percent < 0
 brightness = 0
-color = 0
-alert = ALERT_NONE 
+
+# Use Hue API v2 for controlling lights
+hue_bridge_ip = config_dict["hue_bridge_ip"]
+hue_user_token = config_dict["hue_user_token"]
+hue_light_id = config_dict["hue_light_id"]
+
+light_state_change_url = f"https://{hue_bridge_ip}/clip/v2/resource/light/{hue_light_id}"
+
+v2_light_state = {
+	"on": {"on": True},
+	"dimming": {"brightness": 0},
+	"color": {
+		"xy": {"x": 0, "y": 0}
+	}
+}
 
 if down:
-	color = RED_HUE
 	brightness = 1 + int((percent/LOSS_MAX) * 254)
 	if percent < LOSS_MAX:
-		alert = ALERT_MULTI_BLINK
+		v2_light_state["alert"] = {"action": "breathe"}
+	brightness = max(BRIGHT_MIN, min(BRIGHT_MAX, brightness))
+	# xy values for red
+	v2_light_state["color"]["xy"]["x"] = 0.675
+	v2_light_state["color"]["xy"]["y"] = 0.322
 else:
-	color = GREEN_HUE
 	brightness = 1 + int((percent/GAINS_MAX) * 254)
 	if percent > GAINS_MAX:
-		alert = ALERT_MULTI_BLINK
+		v2_light_state["alert"] = {"action": "breathe"}
+	brightness = max(BRIGHT_MIN, min(BRIGHT_MAX, brightness))
+	# xy values for green
+	v2_light_state["color"]["xy"]["x"] = 0.408
+	v2_light_state["color"]["xy"]["y"] = 0.517
+v2_light_state["dimming"]["brightness"] = (brightness / BRIGHT_MAX) * 100
 
-light_state = {}
-light_state["on"] = True
-light_state["alert"] = alert
-light_state["hue"] = color
-light_state["bri"] = brightness
-light_state["sat"] = saturation
+headers = {
+	"hue-application-key": hue_user_token,
+	"Content-Type": "application/json"
+}
 
-light_state_change_url = "http://%s/api/%s/lights/%s/state" % (config_dict["hue_bridge_ip"], config_dict["hue_user_token"], config_dict["hue_light_id"])
-
-requests.put(light_state_change_url, json.dumps(light_state))
+try:
+	response = requests.put(light_state_change_url, headers=headers, data=json.dumps(v2_light_state), verify=False)
+	if response.status_code != 200:
+		print(f"Error updating light: {response.status_code}")
+		print(response.content)
+except Exception as e:
+	print(f"Error communicating with Hue bridge: {e}")
 
