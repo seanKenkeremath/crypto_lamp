@@ -23,21 +23,19 @@ BRIGHT_MIN = 1
 LOSS_MAX = -10
 GAINS_MAX = 10
 
-SOURCE_TICKER = 1
-SOURCE_BLOCKFOLIO = 2
-
 MODE_24_HR = 1
 MODE_DELTA = 2
+
+SOURCE_CRYPTO = 1
 
 CURRENT_DIR = os.path.dirname(__file__)
 DELTA_FILE_PATH = os.path.join(CURRENT_DIR, 'crypto_delta.dat')
 
 
-# default is daily mode (24 hour cumulative) of blockfolio account
+# default is daily mode (24 hour cumulative)
 mode = MODE_24_HR
-source = SOURCE_BLOCKFOLIO
+source = SOURCE_CRYPTO
 
-#only used if in ticker mode
 ticker = ""
 
 i = 0
@@ -47,8 +45,8 @@ while i < len(sys.argv):
 		mode = MODE_24_HR
 	if arg == "-d":
 		mode = MODE_DELTA
-	if arg == "--ticker":
-		source = SOURCE_TICKER
+	if arg == "--crypto":
+		source = SOURCE_CRYPTO
 		ticker = sys.argv[i+1]
 	i += 1
 
@@ -68,13 +66,7 @@ with open(os.path.join(CURRENT_DIR, 'crypto_lamp.config'), 'r') as config:
 currentTotal = 0
 dailyPercent = 0
 
-if not source == SOURCE_TICKER:
-	blockfolio_token = config_dict["blockfolio_token"]
-	request = "https://api-v0.blockfolio.com/rest/get_all_positions/%s?fiat_currency=USD&locale=en-US&use_alias=true" % blockfolio_token
-	response_json = json.loads(requests.get(request).content)
-	dailyPercent = float(response_json["portfolio"]["percentChangeFiat"].replace('%',''))
-	currentTotal = float(response_json["portfolio"]["portfolioValueFiatString"].replace(',', ''))
-else:
+if source == SOURCE_CRYPTO:
 	cmc_api_key = config_dict["cmc_api_key"]
 	headers = {
 		'X-CMC_PRO_API_KEY': cmc_api_key,
