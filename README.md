@@ -1,5 +1,9 @@
 # crypto_lamp
-A python script for smart lightbulbs that shows how badly you're losing money in crypto. Glows green when you're up, red when you're down. This lets you be aware of your mistakes anywhere in your home, automatically.
+A python script for smart lightbulbs that shows how badly you're losing money in crypto. Glows green when you're up, red when you're down. Larger swings trigger flashing. This lets you be aware of your mistakes anywhere in your home, automatically.
+
+| 👍 Small rally | 👎 Minor dip | 🤑 📈 Pump | 😵 📉 Crash |
+|:---:|:---:|:---:|:---:|
+| <img src="./images/gains.jpg" alt="↗️" width="150" height="250"> | <img src="./images/loss.jpg" alt="↘️" width="150" height="250"> | <img src="./images/stonks_lamp.gif" alt="Big Gains 📈" width="150" height="250"> | <img src="./images/crash_lamp.gif" alt="📉" width="150" height="250"> |
 
 ## You will need:
 * Phillips Hue Color Bulb + a Hue Bridge
