@@ -82,13 +82,7 @@ There are two ways to calculate gains. By default, the script will use the 24 ho
 Using the symbol of the coin you want to track, run `python am_i_broke.py --crypto {coin symbol}`. For example, to track Bitcoin: `python am_i_broke.py --crypto BTC`.
 
 ### Tracking Stocks
-To track stocks, you'll need to install the yfinance library first:
-
-```
-pip install yfinance
-```
-
-Then use the `--stock` parameter followed by the stock ticker symbol:
+To track stocks, use the `--stock` parameter followed by the stock ticker symbol:
 
 ```
 python am_i_broke.py --stock {stock ticker symbol}
