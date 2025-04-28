@@ -54,9 +54,35 @@ You will need a machine capable of running Python. If you do not have python ins
 
 To run the script, navigate to the root folder of this project in your terminal and enter `python am_i_broke.py`.
 
-There are two ways to calculate gains. By default, the script will use the 24 hour percentage change of the given coin.
+There are two ways to calculate gains. By default, the script will use the 24 hour percentage change of the given coin or stock.
 
+### Tracking Crypto
 Using the symbol of the coin you want to track, run `python am_i_broke.py --crypto {coin symbol}`. For example, to track Bitcoin: `python am_i_broke.py --crypto BTC`.
+
+### Tracking Stocks
+To track stocks, you'll need to install the yfinance library first:
+
+```
+pip install yfinance
+```
+
+Then use the `--stock` parameter followed by the stock ticker symbol:
+
+```
+python am_i_broke.py --stock AAPL
+```
+
+For example, to track Apple stock: `python am_i_broke.py --stock AAPL`.
+
+### Verbose Mode
+To see detailed information about the asset you're tracking, add the `-v` flag:
+
+```
+python am_i_broke.py --crypto BTC -v
+python am_i_broke.py --stock AAPL -v
+```
+
+This will display the current price, market cap, and 24-hour change percentage.
 
 #### 24 Hour Mode (default)
 This uses the 24hr percent change CoinMarketCap returns for the given coin. This is the default and does not require additional command line arguments.

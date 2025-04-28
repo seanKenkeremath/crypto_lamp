@@ -15,6 +15,12 @@
 import requests, json, os, sys
 import urllib3
 
+try:
+	import yfinance as yf
+except ImportError:
+	print("yfinance library not found. Please install it with 'pip install yfinance'")
+	sys.exit(1)
+
 # Suppress the InsecureRequestWarning for requests to the Hue bridge
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -27,6 +33,7 @@ MODE_24_HR = 1
 MODE_DELTA = 2
 
 SOURCE_CRYPTO = 1
+SOURCE_STOCK = 2
 
 CURRENT_DIR = os.path.dirname(__file__)
 DELTA_FILE_PATH = os.path.join(CURRENT_DIR, 'crypto_delta.dat')
@@ -34,7 +41,8 @@ DELTA_FILE_PATH = os.path.join(CURRENT_DIR, 'crypto_delta.dat')
 
 # default is daily mode (24 hour cumulative)
 mode = MODE_24_HR
-source = SOURCE_CRYPTO
+source = -1
+verbose = False
 
 ticker = ""
 
@@ -45,9 +53,16 @@ while i < len(sys.argv):
 		mode = MODE_24_HR
 	if arg == "-d":
 		mode = MODE_DELTA
+	if arg == "-v":
+		verbose = True
 	if arg == "--crypto":
 		source = SOURCE_CRYPTO
 		ticker = sys.argv[i+1]
+		i += 1
+	if arg == "--stock":
+		source = SOURCE_STOCK
+		ticker = sys.argv[i+1]
+		i += 1
 	i += 1
 
 
@@ -55,13 +70,13 @@ while i < len(sys.argv):
 config_dict = {}
 
 with open(os.path.join(CURRENT_DIR, 'crypto_lamp.config'), 'r') as config:
-    config_data = config.read()
-    config_values = config_data.split("\n")
-    for i in range(len(config_values)):
-    	config_pair = config_values[i].split("=")
-    	if len(config_pair) < 2:
-    		continue
-    	config_dict[config_pair[0]] = config_pair[1]
+	config_data = config.read()
+	config_values = config_data.split("\n")
+	for i in range(len(config_values)):
+		config_pair = config_values[i].split("=")
+		if len(config_pair) < 2:
+			continue
+		config_dict[config_pair[0]] = config_pair[1]
 
 currentTotal = 0
 dailyPercent = 0
@@ -82,9 +97,44 @@ if source == SOURCE_CRYPTO:
 		ticker_data = response_json['data'][ticker.upper()]
 		dailyPercent = float(ticker_data['quote']['USD']['percent_change_24h'])
 		currentTotal = float(ticker_data['quote']['USD']['market_cap'])
+		
+		if verbose:
+			current_price = float(ticker_data['quote']['USD']['price'])
+			print(f"Crypto: {ticker.upper()}")
+			print(f"Current Price: ${current_price:.2f}")
+			print(f"Current Market Cap: ${currentTotal:.2f}")
+			print(f"24h Change: {dailyPercent:.2f}%")
+		
 	except Exception as e:
 		print(f"Error fetching data from CoinMarketCap: {e}")
 		print("Response:", response.content if 'response' in locals() else "No response")
+		sys.exit(1)
+elif source == SOURCE_STOCK:
+	try:
+		# Get stock data using yfinance
+		stock = yf.Ticker(ticker)
+		hist = stock.history(period="2d")  # Get last 2 days of data
+		
+		if len(hist) < 2:
+			print(f"Error: Not enough historical data for stock {ticker}")
+			sys.exit(1)
+			
+		# Calculate percent change between yesterday's close and today's close
+		yesterday_close = hist.iloc[-2]['Close']
+		today_close = hist.iloc[-1]['Close']
+		
+		dailyPercent = ((today_close - yesterday_close) / yesterday_close) * 100
+		currentTotal = today_close * stock.info.get('sharesOutstanding', 1)  # Market cap or just price if shares not available
+		
+		# Only print detailed information in verbose mode
+		if verbose:
+			print(f"Stock: {ticker}")
+			print(f"Current Price: ${today_close:.2f}")
+			print(f"Current Market Cap: ${currentTotal:.2f}")
+			print(f"24h Change: {dailyPercent:.2f}%")
+		
+	except Exception as e:
+		print(f"Error fetching stock data for {ticker}: {e}")
 		sys.exit(1)
 
 percent = 0
@@ -106,7 +156,7 @@ elif mode == MODE_DELTA:
 
 	# to avoid divide by zero
 	if oldTotal > 0:
-		percent = (currentTotal - oldTotal)/oldTotal
+		percent = (currentTotal - oldTotal)/oldTotal * 100  # Convert to percentage
 
 	# create .dat file for next time
 	delta_file = open(DELTA_FILE_PATH, "w")
