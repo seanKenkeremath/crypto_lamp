@@ -106,6 +106,21 @@ python am_i_broke.py --stock AAPL -v
 
 This will display the current price, market cap, and 24-hour change percentage.
 
+### Recurring Mode
+To run the script automatically at regular intervals without setting up cron jobs, use the `--recurring` flag:
+
+```
+python am_i_broke.py --crypto BTC --recurring
+```
+
+By default, this will check the asset every 15 minutes. You can specify a custom interval in minutes:
+
+```
+python am_i_broke.py --stock AAPL --recurring 30
+```
+
+This will check Apple stock every 30 minutes. The script will run continuously until you stop it with Ctrl+C.
+
 #### 24 Hour Mode (default)
 This uses the 24hr percent change CoinMarketCap returns for the given coin. This is the default and does not require additional command line arguments.
 
@@ -113,7 +128,7 @@ This uses the 24hr percent change CoinMarketCap returns for the given coin. This
 This calculates the percent delta between each time your run the script. The first time you run the script in this mode will always treat the percent change as 0 since there was no previous data. The previous balance is stored in a `crypto_delta.dat` file. If you modify this file the script may not run properly. Deleting the file will remove previous data. Add the `-d` argument to the script to run in delta mode, i.e. `python am_i_broke.py -d --crypto xrp`. If switching to a different coin it is probably a good idea to delete `crypto_delta.dat`.
 
 ## Scheduling
-If you are running the script from a Linux device or Mac, use `cron` to schedule the script. Not sure the best way on Windows, but I'm sure there's plenty
+If you are running the script from a Linux device or Mac, use `cron` to schedule the script. Not sure the best way on Windows, but I'm sure there's plenty. Alternatively, you can use the built-in `--recurring` option described above.
 
 ## Adjust parameters
 There are a few parameters in the script you can tweak. Edit `am_i_broke.py` to change them. 
