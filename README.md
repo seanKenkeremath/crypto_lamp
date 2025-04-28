@@ -50,9 +50,31 @@ To track a coin, the script uses CoinMarketCap's [API](https://coinmarketcap.com
 #### Python setup
 You will need a machine capable of running Python. If you do not have python installed, look up how to install it for your OS.
 
+To install all required dependencies, run:
+
+```
+pip install -r requirements.txt
+```
+
+**Note:** Depending on your Python installation, you might need to use `pip3` instead of `pip`:
+
+```
+pip3 install -r requirements.txt
+```
+
 ## Running the script
 
-To run the script, navigate to the root folder of this project in your terminal and enter `python am_i_broke.py`.
+To run the script, navigate to the root folder of this project in your terminal and enter:
+
+```
+python am_i_broke.py
+```
+
+**Note:** Depending on your Python installation, you might need to use `python3` instead of `python`:
+
+```
+python3 am_i_broke.py
+```
 
 There are two ways to calculate gains. By default, the script will use the 24 hour percentage change of the given coin or stock.
 
@@ -69,10 +91,10 @@ pip install yfinance
 Then use the `--stock` parameter followed by the stock ticker symbol:
 
 ```
-python am_i_broke.py --stock AAPL
+python am_i_broke.py --stock {stock ticker symbol}
 ```
 
-For example, to track Apple stock: `python am_i_broke.py --stock AAPL`.
+For example, to track Google: `python am_i_broke.py --stock GOOG`.
 
 ### Verbose Mode
 To see detailed information about the asset you're tracking, add the `-v` flag:
