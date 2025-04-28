@@ -1,5 +1,8 @@
 # crypto_lamp
-A python script for smart lightbulbs that shows how badly you're losing money in crypto. Glows green when you're up, red when you're down. Larger swings trigger flashing. This lets you be aware of your mistakes anywhere in your home, automatically.
+
+**Now supports stocks**
+
+A python script for smart lightbulbs that shows how badly you're losing money in your investments. Glows green when you're up, red when you're down. Larger swings trigger flashing. This lets you be aware of your mistakes anywhere in your home, automatically.
 
 | 👍 Small rally | 👎 Minor dip | 🤑 📈 Pump | 😵 📉 Crash |
 |:---:|:---:|:---:|:---:|
@@ -9,7 +12,7 @@ A python script for smart lightbulbs that shows how badly you're losing money in
 * Phillips Hue Color Bulb + a Hue Bridge
 * A lamp
 * A computer capable of running Python. A raspberry pi would work fine
-* A CoinMarketCap API key (free)
+* A CoinMarketCap API key (free) if you want to track crypto 
 
 ## Setup
 
@@ -45,6 +48,9 @@ A python script for smart lightbulbs that shows how badly you're losing money in
 * Add this light ID to `crypto_lamp.config` under `hue_light_id`
 
 #### CoinMarketCap API setup
+
+If you just want to track stocks you can skip this step.
+
 * Go to [CoinMarketCap](https://coinmarketcap.com/api/) and sign up for a free API key
 * After signing up, go to your dashboard and copy your API key
 * Add this API key to `crypto_lamp.config` under `cmc_api_key`
