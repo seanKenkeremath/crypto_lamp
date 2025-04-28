@@ -65,6 +65,16 @@ while i < len(sys.argv):
 		i += 1
 	i += 1
 
+if source == -1:
+	print("Error: No valid source specified.")
+	print("Usage: python am_i_broke.py [OPTIONS] --crypto SYMBOL or --stock SYMBOL")
+	print("Options:")
+	print("  -24         Use 24-hour mode (default)")
+	print("  -d          Use delta mode")
+	print("  -v          Verbose output")
+	print("  --crypto    Use cryptocurrency data (requires symbol)")
+	print("  --stock     Use stock data (requires symbol)")
+	sys.exit(1)
 
 #NOTE requests must be installed. Run "pip install requests"
 config_dict = {}
